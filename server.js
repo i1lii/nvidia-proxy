@@ -48,7 +48,7 @@ const MODEL_MAPPING = {
   'minimax':    'minimaxai/minimax-m3',   // New! Replaces m2.7, multimodal MoE
 
   // --- Kimi (Moonshot AI) ---
-  'kimi':       'moonshotai/kimi-k2.6',  // New! 1T MoE, long-horizon, tool use
+  'kimi':       'moonshotai/kimi-k3',  // New! 1T MoE, long-horizon, tool use
 
   // --- Step (StepFun AI, free endpoint) ---
   'step-flash': 'stepfun-ai/step-3.7-flash',  // New! Sparse MoE, fast reasoning
@@ -131,7 +131,7 @@ const THINKING_MODELS = [
   'mistralai/mistral-small-4-119b-2603',
   'z-ai/glm-5.2',
   'minimaxai/minimax-m3',
-  'moonshotai/kimi-k2.6',
+  'moonshotai/kimi-k3',
   'stepfun-ai/step-3.7-flash',
 ];
 
@@ -203,7 +203,7 @@ app.get('/', (req, res) => {
       best_quality: 'gpt-4 → deepseek-v4-pro (1M ctx)',
       balanced: 'gpt-4o → deepseek-v4-flash (fast MoE)',
       free_flagship: 'glm-pro → glm-5.2 (latest Z.ai)',
-      newest: 'kimi → kimi-k2.6 (1T MoE)'
+      newest: 'kimi → kimi-k3 (1T MoE)'
     }
   });
 });
@@ -289,8 +289,8 @@ app.post('/v1/chat/completions', async (req, res) => {
     const nimRequest = {
       model: nimModel,
       messages: messages,
-      temperature: temperature || 0.7,
-      max_tokens: max_tokens || 12000,
+      temperature: temperature || 1,
+      max_tokens: max_tokens || 32000,
       stream: stream || false
     };
 
@@ -492,7 +492,7 @@ app.listen(PORT, '0.0.0.0', () => {
   console.log('   • Best Quality : gpt-4       → DeepSeek V4 Pro (1M ctx)');
   console.log('   • Balanced     : gpt-4o      → DeepSeek V4 Flash (fast MoE)');
   console.log('   • Free Latest  : glm-pro     → GLM-5.2 (Z.ai flagship)');
-  console.log('   • Newest       : kimi        → Kimi K2.6 (1T MoE)');
+  console.log('   • Newest       : kimi        → Kimi-k3 (1T MoE)');
   console.log('   • Fast Free    : step-flash  → Step-3.7 Flash');
   console.log('🔄 Fallback Chain (on 429):');
   FALLBACK_CHAIN.forEach((m, i) => console.log(`   ${i + 1}. ${m}`));
