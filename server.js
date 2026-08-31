@@ -23,13 +23,14 @@ const ENABLE_THINKING_MODE = process.env.ENABLE_THINKING_MODE === 'true' || true
 
 // 🎯 MODEL MAPPING — verified against build.nvidia.com/models (July 2025)
 const MODEL_MAPPING = {
+ "deepseek-ai/deepseek-v4-pro-0813",
   'kimi': 'moonshotai/kimi-k3',
   'kimi-k3': 'moonshotai/kimi-k3',
   'moonshotai/kimi-k3': 'moonshotai/kimi-k3',
 };
 
 // 🔄 FALLBACK CHAIN - When primary model hits 429, try these in order
-const FALLBACK_CHAIN = [];
+const FALLBACK_CHAIN = [ "deepseek-ai/deepseek-v4-pro-0813", ]
 
 
 // 🛡️ ROLEPLAY GUARD - Injected into every request to prevent the model from speaking as the user
@@ -84,7 +85,7 @@ function stripUserBreakout(text) {
 // 🎨 THINKING-CAPABLE MODELS
 const THINKING_MODELS = [
   'moonshotai/kimi-k3',
-  
+  "deepseek-ai/deepseek-v4-pro-0813",
 ];
 
 // 🔄 Helper: make a NIM request with automatic 429 fallback
