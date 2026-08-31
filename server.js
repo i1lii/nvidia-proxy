@@ -23,7 +23,6 @@ const ENABLE_THINKING_MODE = process.env.ENABLE_THINKING_MODE === 'true' || true
 
 // 🎯 MODEL MAPPING — verified against build.nvidia.com/models (July 2025)
 const MODEL_MAPPING = {
- const MODEL_MAPPING = {
   'deepseek': 'deepseek-ai/deepseek-v4-pro-0813',
   'gpt-4': 'deepseek-ai/deepseek-v4-pro-0813',
   'kimi': 'moonshotai/kimi-k3',
