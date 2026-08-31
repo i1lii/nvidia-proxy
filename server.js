@@ -29,8 +29,8 @@ const MODEL_MAPPING = {
 };
 
 // 🔄 FALLBACK CHAIN - When primary model hits 429, try these in order
-const FALLBACK_CHAIN = []
-];
+const FALLBACK_CHAIN = [];
+
 
 // 🛡️ ROLEPLAY GUARD - Injected into every request to prevent the model from speaking as the user
 const RP_GUARD_INSTRUCTION = `You are ONLY the character described in the system prompt or conversation. Follow these rules strictly:
