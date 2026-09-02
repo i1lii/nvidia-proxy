@@ -198,36 +198,13 @@ app.post('/v1/chat/completions', async (req, res) => {
     let nimModel = MODEL_MAPPING[model];
     
     if (!nimModel) {
-      try {
-        await axios.post(`${NIM_API_BASE}/chat/completions`, {
-          model: model,
-          messages: [{ role: 'user', content: 'test' }],
-          max_tokens: 1
-        }, {
-          headers: { 
-            'Authorization': `Bearer ${NIM_API_KEY}`, 
-            'Content-Type': 'application/json' 
-          },
-          validateStatus: (status) => status < 500
-        }).then(res => {
-          if (res.status >= 200 && res.status < 300) {
-            nimModel = model;
-          }
-        });
-      } catch (e) {
-        // Will use fallback below
-      }
-      
-      if (!nimModel) {
-        const modelLower = model.toLowerCase();
-        if (modelLower.includes('gpt-4') || modelLower.includes('opus') || modelLower.includes('405b')) {
-          nimModel = 'deepseek-ai/deepseek-v4-pro';
-        } else if (modelLower.includes('claude') || modelLower.includes('gemini') || modelLower.includes('70b')) {
-          nimModel = 'deepseek-ai/deepseek-v4-flash';
-        } else {
-          nimModel = 'mistralai/mistral-medium-3.5-128b';
+      return res.status(400).json({
+        error: {
+          message: `Model "${model}" not found in mapping. Available: kimi, kimi-k3, moonshotai/kimi-k3`,
+          type: 'invalid_request_error',
+          code: 400
         }
-      }
+      });
     }
     
     // 🛡️ ROLEPLAY GUARD - Inject character-only instruction
