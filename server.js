@@ -433,6 +433,7 @@ Prioritize human authenticity and emotional truth over mechanical perfection. Re
         code: error.response?.status || 500
       }
     });
+  }
 });
 
 // Catch-all for unsupported endpoints
