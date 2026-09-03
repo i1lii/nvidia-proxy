@@ -433,17 +433,19 @@ Prioritize human authenticity and emotional truth over mechanical perfection. Re
         code: error.response?.status || 500
       }
     });
-  }
 });
 
 // Catch-all for unsupported endpoints
 app.all('*', (req, res) => {
   res.status(404).json({
     error: {
-      message: `Endpoint ${req.path}​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​
+      message: `Endpoint ${req.path} not found. Available endpoints: /health, /v1/models, /v1/chat/completions`,
+      type: 'invalid_request_error',
+      code: 404
     }
   });
-  
+});
+
 app.listen(PORT, '0.0.0.0', () => {
   console.log('═══════════════════════════════════════════════════════');
   console.log('🚀 OpenAI → NVIDIA NIM Proxy (Janitor AI Optimized)');
