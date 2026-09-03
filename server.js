@@ -34,9 +34,6 @@ const MODEL_MAPPING = {
 // 🔄 FALLBACK CHAIN - When primary model hits 429, try these in order
 const FALLBACK_CHAIN = [ "deepseek-ai/deepseek-v4-pro-0813" ];
 
-
-];
-
 // 🛡️ ROLEPLAY GUARD - Injected into every request to prevent the model from speaking as the user
 const RP_GUARD_INSTRUCTION = `You are ONLY the character described in the system prompt or conversation. Follow these rules strictly:
 - You ONLY speak, act, and think as the character. You do NEVER write or generate any dialogue, actions, or thoughts for the user or any other character that the user is playing.
