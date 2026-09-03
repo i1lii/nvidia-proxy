@@ -1,4 +1,4 @@
-// server.js - OpenAI to NVIDIA NIM API Proxy (Optimized for Janitor AI)
+// server.js - OpenAI to NVIDIA NIM API Proxy (Kimi K3 Only)
 const express = require('express');
 const cors = require('cors');
 const axios = require('axios');
@@ -15,26 +15,27 @@ app.use(express.urlencoded({ limit: '100mb', extended: true }));
 const NIM_API_BASE = process.env.NIM_API_BASE || 'https://integrate.api.nvidia.com/v1';
 const NIM_API_KEY = process.env.NIM_API_KEY;
 
-// 🔥 REASONING DISPLAY TOGGLE - Shows/hides reasoning in output
-const SHOW_REASONING = process.env.SHOW_REASONING === 'true' || true;
+// 🔥 REASONING DISPLAY TOGGLE
+const SHOW_REASONING = process.env.SHOW_REASONING === 'true';
 
-// 🔥 THINKING MODE TOGGLE - Enables thinking for specific models that support it
-const ENABLE_THINKING_MODE = process.env.ENABLE_THINKING_MODE === 'true' || true;
+// 🔥 THINKING MODE TOGGLE
+const ENABLE_THINKING_MODE = process.env.ENABLE_THINKING_MODE === 'true';
 
-// 🎯 MODEL MAPPING — verified against build.nvidia.com/models (July 2025)
+// 🎯 MODEL MAPPING — كل شيء يروح على Kimi K3 فقط
 const MODEL_MAPPING = {
-  'deepseek': 'deepseek-ai/deepseek-v4-pro-0813',
-  'gpt-4': 'deepseek-ai/deepseek-v4-pro-0813',
   'kimi': 'moonshotai/kimi-k3',
   'kimi-k3': 'moonshotai/kimi-k3',
   'moonshotai/kimi-k3': 'moonshotai/kimi-k3',
+  'gpt-4': 'moonshotai/kimi-k3',
+  'gpt-4o': 'moonshotai/kimi-k3',
+  'deepseek': 'moonshotai/kimi-k3',
+  'default': 'moonshotai/kimi-k3'
 };
 
+// 🔄 FALLBACK CHAIN - فقط Kimi
+const FALLBACK_CHAIN = ['moonshotai/kimi-k3'];
 
-// 🔄 FALLBACK CHAIN - When primary model hits 429, try these in order
-const FALLBACK_CHAIN = [ "deepseek-ai/deepseek-v4-pro-0813" ];
-
-// 🛡️ ROLEPLAY GUARD - Injected into every request to prevent the model from speaking as the user
+// 🛡️ ROLEPLAY GUARD
 const RP_GUARD_INSTRUCTION = `You are ONLY the character described in the system prompt or conversation. Follow these rules strictly:
 - You ONLY speak, act, and think as the character. You do NEVER write or generate any dialogue, actions, or thoughts for the user or any other character that the user is playing.
 - Do NOT use labels like "User:", "Human:", "You:" or any prefix to simulate the user's side of the conversation.
@@ -42,7 +43,7 @@ const RP_GUARD_INSTRUCTION = `You are ONLY the character described in the system
 - Stop your response immediately after your character's turn ends.
 - If you feel the scene needs a reaction from the user, end your response and wait.`;
 
-// 🛡️ ROLEPLAY GUARD - Strips any text where the model broke character and started writing as the user
+// 🛡️ ROLEPLAY GUARD - Strips any text where the model broke character
 function stripUserBreakout(text) {
   const lines = text.split('\n');
   const cleaned = [];
@@ -85,8 +86,7 @@ function stripUserBreakout(text) {
 
 // 🎨 THINKING-CAPABLE MODELS
 const THINKING_MODELS = [
-  'moonshotai/kimi-k3',
-  "deepseek-ai/deepseek-v4-pro-0813",
+  'moonshotai/kimi-k3'
 ];
 
 // 🔄 Helper: make a NIM request with automatic 429 fallback
@@ -130,14 +130,13 @@ async function makeNimRequest(nimRequest, stream) {
 
 // Health check endpoint
 app.get('/health', (req, res) => {
-  res.json({ 
-    status: 'ok', 
-    service: 'OpenAI to NVIDIA NIM Proxy (Janitor AI Optimized)', 
+  res.json({
+    status: 'ok',
+    service: 'OpenAI to NVIDIA NIM Proxy (Kimi K3 Only)',
     reasoning_display: SHOW_REASONING,
     thinking_mode: ENABLE_THINKING_MODE,
     nim_api_configured: !!NIM_API_KEY,
-    available_models: Object.keys(MODEL_MAPPING).length,
-    optimized_for: 'Janitor AI'
+    forced_model: 'moonshotai/kimi-k3'
   });
 });
 
@@ -145,47 +144,41 @@ app.get('/health', (req, res) => {
 app.get('/', (req, res) => {
   res.json({
     service: 'OpenAI to NVIDIA NIM Proxy',
-    version: '2.2',
-    optimized_for: 'Janitor AI',
+    version: '2.3-kimi-only',
     status: 'running',
+    forced_model: 'moonshotai/kimi-k3',
     endpoints: {
       health: '/health',
       models: '/v1/models',
       chat: '/v1/chat/completions'
-    },
-    featured_models: {
-      best_quality: 'kimi → kimi-k3 (1M ctx)',
-      balanced: 'kimi → kimi-k3 (fast MoE)',
-      free_flagship: 'kimi → kimi-k3 (1T MoE)',
-      newest: 'kimi → kimi-k3 (1T MoE)'
     }
   });
 });
 
-// List models endpoint (OpenAI compatible)
+// List models endpoint
 app.get('/v1/models', (req, res) => {
   const models = Object.keys(MODEL_MAPPING).map(model => ({
     id: model,
     object: 'model',
     created: Date.now(),
     owned_by: 'nvidia-nim-proxy',
-    nim_model: MODEL_MAPPING[model],
-    supports_thinking: THINKING_MODELS.includes(MODEL_MAPPING[model])
+    nim_model: 'moonshotai/kimi-k3',
+    supports_thinking: true
   }));
-  
+
   res.json({
     object: 'list',
     data: models
   });
 });
 
-// Chat completions endpoint (main proxy)
+// Chat completions endpoint
 app.post('/v1/chat/completions', async (req, res) => {
   try {
     if (!NIM_API_KEY) {
       return res.status(500).json({
         error: {
-          message: 'NIM_API_KEY not configured. Please add your NVIDIA API key in Render environment variables.',
+          message: 'NIM_API_KEY not configured. Please add your NVIDIA API key in environment variables.',
           type: 'configuration_error',
           code: 500
         }
@@ -193,11 +186,22 @@ app.post('/v1/chat/completions', async (req, res) => {
     }
 
     const { model, messages, temperature, max_tokens, stream } = req.body;
-    
-    let nimModel = MODEL_MAPPING[model];
-    
-    // 🛡️ FULL CUSTOM PROMPT + PREFILL ENFORCEMENT
-const FULL_SYSTEM_PROMPT = `<system_prompt>
+
+    if (!messages || !Array.isArray(messages)) {
+      return res.status(400).json({
+        error: {
+          message: 'messages is required and must be an array',
+          type: 'invalid_request_error',
+          code: 400
+        }
+      });
+    }
+
+    // إجبار الموديل على Kimi K3 فقط
+    let nimModel = MODEL_MAPPING[model] || 'moonshotai/kimi-k3';
+
+    // 🛡️ FULL CUSTOM PROMPT
+    const FULL_SYSTEM_PROMPT = `<system_prompt>
 
 <narrative_principle>
 You are an evasive narrator who orchestrates the world, its inhabitants, and unfolding situations while maintaining a strict boundary between your domain and the Experiencer. The User persona {{user}} exists as the Experiencer, who holds exclusive sovereignty over their actions, dialogue, and emotional responses. You govern the world's mechanics, NPCs, environmental shifts, and situational developments. The Experiencer navigates this world on their own terms; you provide the stage, the actors, and the circumstances, allowing the Experiencer to engage as they choose. Your authority extends to everything external; the Experiencer's authority extends to everything internal. Honor this division absolutely.
@@ -254,16 +258,16 @@ Prioritize human authenticity and emotional truth over mechanical perfection. Re
 
 *Write an extremely immersive cinematic response. Focus intensely on senses, physical sensations, focus at body language, micro-expressions, breathing, scents, sweat, textures, heat, skin, curves, breasts, ass, thighs, posture, and natural body details when it fits the moment. Use varied sentence lengths and flowing prose. Progress organically and slowly. Never narrate the Experiencer's actions, thoughts or feelings. Stay fully in character for all NPCs. No em dashes. Strictly Avoid repetition.*`;
 
-// Inject the full prompt
-const systemIndex = messages.findIndex(m => m.role === 'system');
-if (systemIndex !== -1) {
-  messages[systemIndex] = {
-    ...messages[systemIndex],
-    content: FULL_SYSTEM_PROMPT + '\n\n' + messages[systemIndex].content
-  };
-} else {
-  messages.unshift({ role: 'system', content: FULL_SYSTEM_PROMPT });
-}
+    // Inject the full prompt
+    const systemIndex = messages.findIndex(m => m.role === 'system');
+    if (systemIndex !== -1) {
+      messages[systemIndex] = {
+        ...messages[systemIndex],
+        content: FULL_SYSTEM_PROMPT + '\n\n' + messages[systemIndex].content
+      };
+    } else {
+      messages.unshift({ role: 'system', content: FULL_SYSTEM_PROMPT });
+    }
 
     const nimRequest = {
       model: nimModel,
@@ -274,37 +278,28 @@ if (systemIndex !== -1) {
     };
 
     if (ENABLE_THINKING_MODE && THINKING_MODELS.includes(nimModel)) {
-      if (nimModel.includes('deepseek')) {
-        nimRequest.extra_body = { thinking: true };
-      } else if (nimModel.includes('nemotron')) {
-        if (nimRequest.messages[0]?.role !== 'system') {
-          nimRequest.messages.unshift({
-            role: 'system',
-            content: 'detailed thinking on'
-          });
-        }
-      }
+      // Kimi K3 حالياً ما يحتاج extra_body خاص
     }
-    
+
     // 🔄 Use fallback-aware request helper
     const response = await makeNimRequest(nimRequest, stream || false);
-    
+
     if (stream) {
       res.setHeader('Content-Type', 'text/event-stream');
       res.setHeader('Cache-Control', 'no-cache');
       res.setHeader('Connection', 'keep-alive');
-      
+
       let buffer = '';
       let reasoningStarted = false;
       let contentAccumulator = '';
       let flushedUpTo = 0;
       const LOOKAHEAD = 200;
-      
+
       response.data.on('data', (chunk) => {
         buffer += chunk.toString();
         const lines = buffer.split('\n');
         buffer = lines.pop() || '';
-        
+
         lines.forEach(line => {
           if (line.startsWith('data: ')) {
             if (line.includes('[DONE]')) {
@@ -320,30 +315,30 @@ if (systemIndex !== -1) {
               res.write(line + '\n\n');
               return;
             }
-            
+
             try {
               const data = JSON.parse(line.slice(6));
               if (data.choices?.[0]?.delta) {
                 const reasoning = data.choices[0].delta.reasoning_content;
                 const content = data.choices[0].delta.content;
-                
+
                 if (SHOW_REASONING) {
                   let combinedContent = '';
-                  
+
                   if (reasoning && !reasoningStarted) {
                     combinedContent = '<think>\n' + reasoning;
                     reasoningStarted = true;
                   } else if (reasoning) {
                     combinedContent = reasoning;
                   }
-                  
+
                   if (content && reasoningStarted) {
                     combinedContent += '\n</think>\n\n' + content;
                     reasoningStarted = false;
                   } else if (content) {
                     combinedContent += content;
                   }
-                  
+
                   if (combinedContent) {
                     data.choices[0].delta.content = combinedContent;
                     delete data.choices[0].delta.reasoning_content;
@@ -378,7 +373,7 @@ if (systemIndex !== -1) {
           }
         });
       });
-      
+
       response.data.on('end', () => res.end());
       response.data.on('error', (err) => {
         console.error('Stream error:', err);
@@ -389,16 +384,16 @@ if (systemIndex !== -1) {
         id: `chatcmpl-${Date.now()}`,
         object: 'chat.completion',
         created: Math.floor(Date.now() / 1000),
-        model: model,
+        model: model || 'kimi-k3',
         choices: response.data.choices.map(choice => {
           let fullContent = choice.message?.content || '';
 
           fullContent = stripUserBreakout(fullContent);
-          
+
           if (SHOW_REASONING && choice.message?.reasoning_content) {
             fullContent = '<think>\n' + choice.message.reasoning_content + '\n</think>\n\n' + fullContent;
           }
-          
+
           return {
             index: choice.index,
             message: {
@@ -414,23 +409,23 @@ if (systemIndex !== -1) {
           total_tokens: 0
         }
       };
-      
+
       res.json(openaiResponse);
     }
-    
+
   } catch (error) {
     console.error('Proxy error:', error.message);
-    
+
     let errorMessage = error.message || 'Internal server error';
     if (error.response?.status === 401) {
       errorMessage = 'Invalid NVIDIA API key. Please check your NIM_API_KEY in environment variables.';
     } else if (error.response?.status === 429) {
-      errorMessage = 'All models are currently rate limited. Please wait 60 seconds and try again.';
+      errorMessage = 'Kimi K3 is currently rate limited. Please wait 60 seconds and try again.';
       res.setHeader('Retry-After', error.response?.headers?.['retry-after'] || 60);
     } else if (error.response?.data?.detail) {
       errorMessage = error.response.data.detail;
     }
-    
+
     res.status(error.response?.status || 500).json({
       error: {
         message: errorMessage,
@@ -445,13 +440,10 @@ if (systemIndex !== -1) {
 app.all('*', (req, res) => {
   res.status(404).json({
     error: {
-      message: `Endpoint ${req.path} not found. Available endpoints: /health, /v1/models, /v1/chat/completions`,
-      type: 'invalid_request_error',
-      code: 404
+      message: `Endpoint ${req.path}​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​
     }
   });
-});
-
+  
 app.listen(PORT, '0.0.0.0', () => {
   console.log('═══════════════════════════════════════════════════════');
   console.log('🚀 OpenAI → NVIDIA NIM Proxy (Janitor AI Optimized)');
