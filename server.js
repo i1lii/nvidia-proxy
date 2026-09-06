@@ -259,15 +259,15 @@ Prioritize human authenticity and emotional truth over mechanical perfection. Re
 *Write an extremely immersive cinematic response. Focus intensely on senses, physical sensations, focus at body language, micro-expressions, breathing, scents, sweat, textures, heat, skin, curves, breasts, ass, thighs, posture, and natural body details when it fits the moment. Use varied sentence lengths and flowing prose. Progress organically and slowly. Never narrate the Experiencer's actions, thoughts or feelings. Stay fully in character for all NPCs. No em dashes. Strictly Avoid repetition.*`;
 
     // Inject the full prompt
-    const systemIndex = messages.findIndex(m => m.role === 'system');
-    if (systemIndex !== -1) {
-      messages[systemIndex] = {
-        ...messages[systemIndex],
-        content: FULL_SYSTEM_PROMPT + '\n\n' + messages[systemIndex].content
-      };
-    } else {
-      messages.unshift({ role: 'system', content: FULL_SYSTEM_PROMPT });
-    }
+// const systemIndex = messages.findIndex(m => m.role === 'system');
+// if (systemIndex !== -1) {
+//   messages[systemIndex] = {
+//     ...messages[systemIndex],
+//     content: FULL_SYSTEM_PROMPT + '\n\n' + messages[systemIndex].content
+//   };
+// } else {
+//   messages.unshift({ role: 'system', content: FULL_SYSTEM_PROMPT });
+// }
 
     const nimRequest = {
       model: nimModel,
