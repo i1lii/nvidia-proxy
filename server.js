@@ -23,7 +23,7 @@ const ENABLE_THINKING_MODE = process.env.ENABLE_THINKING_MODE === 'true';
 
 // 🎯 MODEL MAPPING — كل شيء يروح على DeepSeek V4 Pro فقط
 const MODEL_MAPPING = {
- 'deepseek-ai/deepseek-v4-pro-0813'': 'deepseek-ai/deepseek-v4-pro-0813',  'deepseek-ai/deepseek-v4-pro-0813'': 'deepseek-ai/deepseek-v4-pro-0813',
+ 'deepseek-ai/deepseek-v4-pro-0813': 'deepseek-ai/deepseek-v4-pro-0813',  'deepseek-ai/deepseek-v4-pro-0813'': 'deepseek-ai/deepseek-v4-pro-0813',
  'deepseek-ai/deepseek-v4-pro-0813': 'deepseek-ai/deepseek-v4-pro-0813',
  'gpt-4': 'deepseek-ai/deepseek-v4-pro-0813',
  'gpt-4o': 'deepseek-ai/deepseek-v4-pro-0813',
@@ -135,7 +135,7 @@ app.get('/health', (req, res) => {
     reasoning_display: SHOW_REASONING,
     thinking_mode: ENABLE_THINKING_MODE,
     nim_api_configured: !!NIM_API_KEY,
-    forced_model: 'moonshotai/kimi-k3'
+    forced_model: 'deepseek-ai/deepseek-v4-pro-0813'
   });
 });
 
@@ -143,7 +143,7 @@ app.get('/health', (req, res) => {
 app.get('/', (req, res) => {
   res.json({
     service: 'OpenAI to NVIDIA NIM Proxy',
-    version: ''deepseek-ai/deepseek-v4-pro-0813- only',
+    version: 'deepseek-ai/deepseek-v4-pro-0813- only',
     status: 'running',
     forced_model: 'moonshotai/kimi-k3',
     endpoints: {
@@ -161,7 +161,7 @@ app.get('/v1/models', (req, res) => {
     object: 'model',
     created: Date.now(),
     owned_by: 'nvidia-nim-proxy',
-    nim_model: 'moonshotai/kimi-k3',
+    nim_model: 'deepseek-ai/deepseek-v4-pro-0813',
     supports_thinking: true
   }));
 
@@ -465,7 +465,7 @@ app.listen(PORT, '0.0.0.0', () => {
   console.log('   • Best Quality : gpt-4       → DeepSeek V4 Pro (1M ctx)');
   console.log('   • Balanced     : gpt-4o      → DeepSeek V4 Flash (fast MoE)');
   console.log('   • Free Latest  : glm-pro     → GLM-5.2 (Z.ai flagship)');
-  console.log('   • Newest       : deepseek-ai/deepseek-v4-pro-0813       → deepseek-ai/deepseek-v4-pro-0813  '(1T MoE)');
+  console.log('   • Newest       : deepseek-ai/deepseek-v4-pro-0813       → deepseek-ai/deepseek-v4-pro-0813   '(1T MoE)');
   console.log('   • Fast Free    : step-flash  → Step-3.7 Flash');
   console.log('🔄 Fallback Chain (on 429):');
   FALLBACK_CHAIN.forEach((m, i) => console.log(`   ${i + 1}. ${m}`));
