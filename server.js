@@ -465,7 +465,7 @@ app.listen(PORT, '0.0.0.0', () => {
   console.log('   • Best Quality : gpt-4       → DeepSeek V4 Pro (1M ctx)');
   console.log('   • Balanced     : gpt-4o      → DeepSeek V4 Flash (fast MoE)');
   console.log('   • Free Latest  : glm-pro     → GLM-5.2 (Z.ai flagship)');
-  console.log('   • Newest       : deepseek-ai/deepseek-v4-pro-0813       → deepseek-ai/deepseek-v4-pro-0813 (1T MoE)');
+  console.log('   • Newest       : deepseek-ai/deepseek-v4-pro-0813       → deepseek-ai/deepseek-v4-pro-0813  '(1T MoE)');
   console.log('   • Fast Free    : step-flash  → Step-3.7 Flash');
   console.log('🔄 Fallback Chain (on 429):');
   FALLBACK_CHAIN.forEach((m, i) => console.log(`   ${i + 1}. ${m}`));
