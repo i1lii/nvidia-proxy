@@ -16,10 +16,10 @@ const NIM_API_BASE = process.env.NIM_API_BASE || 'https://integrate.api.nvidia.c
 const NIM_API_KEY = process.env.NIM_API_KEY;
 
 // 🔥 REASONING DISPLAY TOGGLE
-const SHOW_REASONING = process.env.SHOW_REASONING === 'true';
+const SHOW_REASONING = process.env.SHOW_REASONING === 'false';
 
 // 🔥 THINKING MODE TOGGLE
-const ENABLE_THINKING_MODE = process.env.ENABLE_THINKING_MODE === 'true';
+const ENABLE_THINKING_MODE = process.env.ENABLE_THINKING_MODE === 'false';
 
 // 🎯 MODEL MAPPING — كل شيء يروح على DeepSeek V4 Pro فقط
 const MODEL_MAPPING = {
