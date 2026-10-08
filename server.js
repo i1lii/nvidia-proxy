@@ -1,4 +1,4 @@
-// server.js - OpenAI to NVIDIA NIM API Proxy (Kimi K3 Only)
+// server.js - OpenAI to NVIDIA NIM API Proxy (GLM 5.3 Only)
 const express = require('express');
 const cors = require('cors');
 const axios = require('axios');
@@ -21,19 +21,21 @@ const SHOW_REASONING = process.env.SHOW_REASONING === 'true';
 // 🔥 THINKING MODE TOGGLE
 const ENABLE_THINKING_MODE = process.env.ENABLE_THINKING_MODE === 'true';
 
-// 🎯 MODEL MAPPING — كل شيء يروح على Kimi K3 فقط
+// 🎯 MODEL MAPPING — كل شيء يروح على GLM 5.3 فقط
 const MODEL_MAPPING = {
-  'kimi': 'moonshotai/kimi-k3',
-  'kimi-k3': 'moonshotai/kimi-k3',
-  'moonshotai/kimi-k3': 'moonshotai/kimi-k3',
-  'gpt-4': 'moonshotai/kimi-k3',
-  'gpt-4o': 'moonshotai/kimi-k3',
-  'deepseek': 'moonshotai/kimi-k3',
-  'default': 'moonshotai/kimi-k3'
+  'kimi': 'z-ai/glm-5.3',
+  'kimi-k3': 'z-ai/glm-5.3',
+  'moonshotai/kimi-k3': 'z-ai/glm-5.3',
+  'gpt-4': 'z-ai/glm-5.3',
+  'gpt-4o': 'z-ai/glm-5.3',
+  'deepseek': 'z-ai/glm-5.3',
+  'glm': 'z-ai/glm-5.3',
+  'glm-5.3': 'z-ai/glm-5.3',
+  'default': 'z-ai/glm-5.3'
 };
 
-// 🔄 FALLBACK CHAIN - فقط Kimi
-const FALLBACK_CHAIN = ['moonshotai/kimi-k3'];
+// 🔄 FALLBACK CHAIN - فقط GLM 5.3
+const FALLBACK_CHAIN = ['z-ai/glm-5.3'];
 
 // 🛡️ ROLEPLAY GUARD
 const RP_GUARD_INSTRUCTION = `You are ONLY the character described in the system prompt or conversation. Follow these rules strictly:
@@ -86,7 +88,7 @@ function stripUserBreakout(text) {
 
 // 🎨 THINKING-CAPABLE MODELS
 const THINKING_MODELS = [
-  'moonshotai/kimi-k3'
+  'z-ai/glm-5.3'
 ];
 
 // 🔄 Helper: make a NIM request with automatic 429 fallback
@@ -132,11 +134,11 @@ async function makeNimRequest(nimRequest, stream) {
 app.get('/health', (req, res) => {
   res.json({
     status: 'ok',
-    service: 'OpenAI to NVIDIA NIM Proxy (Kimi K3 Only)',
+    service: 'OpenAI to NVIDIA NIM Proxy (GLM 5.3 Only)',
     reasoning_display: SHOW_REASONING,
     thinking_mode: ENABLE_THINKING_MODE,
     nim_api_configured: !!NIM_API_KEY,
-    forced_model: 'moonshotai/kimi-k3'
+    forced_model: 'z-ai/glm-5.3'
   });
 });
 
@@ -144,9 +146,9 @@ app.get('/health', (req, res) => {
 app.get('/', (req, res) => {
   res.json({
     service: 'OpenAI to NVIDIA NIM Proxy',
-    version: '2.3-kimi-only',
+    version: '2.3-glm-5.3-only',
     status: 'running',
-    forced_model: 'moonshotai/kimi-k3',
+    forced_model: 'z-ai/glm-5.3',
     endpoints: {
       health: '/health',
       models: '/v1/models',
@@ -162,7 +164,7 @@ app.get('/v1/models', (req, res) => {
     object: 'model',
     created: Date.now(),
     owned_by: 'nvidia-nim-proxy',
-    nim_model: 'moonshotai/kimi-k3',
+    nim_model: 'z-ai/glm-5.3',
     supports_thinking: true
   }));
 
@@ -197,8 +199,8 @@ app.post('/v1/chat/completions', async (req, res) => {
       });
     }
 
-    // إجبار الموديل على Kimi K3 فقط
-    let nimModel = MODEL_MAPPING[model] || 'moonshotai/kimi-k3';
+    // إجبار الموديل على GLM 5.3 فقط
+    let nimModel = MODEL_MAPPING[model] || 'z-ai/glm-5.3';
 
     // 🛡️ FULL CUSTOM PROMPT
     const FULL_SYSTEM_PROMPT = `<system_prompt>
@@ -261,7 +263,7 @@ Internalize all prior context and let it shape behavior and continuity without r
     };
 
     if (ENABLE_THINKING_MODE && THINKING_MODELS.includes(nimModel)) {
-      // Kimi K3 حالياً ما يحتاج extra_body خاص
+      // optional thinking hooks for models that support them
     }
 
     // 🔄 Use fallback-aware request helper
@@ -367,7 +369,7 @@ Internalize all prior context and let it shape behavior and continuity without r
         id: `chatcmpl-${Date.now()}`,
         object: 'chat.completion',
         created: Math.floor(Date.now() / 1000),
-        model: model || 'kimi-k3',
+        model: model || 'glm-5.3',
         choices: response.data.choices.map(choice => {
           let fullContent = choice.message?.content || '';
 
@@ -403,7 +405,7 @@ Internalize all prior context and let it shape behavior and continuity without r
     if (error.response?.status === 401) {
       errorMessage = 'Invalid NVIDIA API key. Please check your NIM_API_KEY in environment variables.';
     } else if (error.response?.status === 429) {
-      errorMessage = 'Kimi K3 is currently rate limited. Please wait 60 seconds and try again.';
+      errorMessage = 'GLM 5.3 is currently rate limited. Please wait 60 seconds and try again.';
       res.setHeader('Retry-After', error.response?.headers?.['retry-after'] || 60);
     } else if (error.response?.data?.detail) {
       errorMessage = error.response.data.detail;
@@ -432,7 +434,7 @@ app.all('*', (req, res) => {
 
 app.listen(PORT, '0.0.0.0', () => {
   console.log('═══════════════════════════════════════════════════════');
-  console.log('🚀 OpenAI → NVIDIA NIM Proxy (Janitor AI Optimized)');
+  console.log('🚀 OpenAI → NVIDIA NIM Proxy (GLM 5.3 Only)');
   console.log('═══════════════════════════════════════════════════════');
   console.log(`📡 Server running on port ${PORT}`);
   console.log(`🏥 Health check: http://localhost:${PORT}/health`);
@@ -446,11 +448,7 @@ app.listen(PORT, '0.0.0.0', () => {
   console.log(`   • 429 fallback chain: ${FALLBACK_CHAIN.length} models`);
   console.log('');
   console.log('🎯 Featured Models:');
-  console.log('   • Best Quality : gpt-4       → DeepSeek V4 Pro (1M ctx)');
-  console.log('   • Balanced     : gpt-4o      → DeepSeek V4 Flash (fast MoE)');
-  console.log('   • Free Latest  : glm-pro     → GLM-5.2 (Z.ai flagship)');
-  console.log('   • Newest       : kimi        → Kimi-k3 (1T MoE)');
-  console.log('   • Fast Free    : step-flash  → Step-3.7 Flash');
+  console.log('   • Forced model : all aliases → z-ai/glm-5.3');
   console.log('🔄 Fallback Chain (on 429):');
   FALLBACK_CHAIN.forEach((m, i) => console.log(`   ${i + 1}. ${m}`));
   console.log('═══════════════════════════════════════════════════════');
