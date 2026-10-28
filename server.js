@@ -1,4 +1,4 @@
-// server.js - OpenAI to NVIDIA NIM API Proxy (GLM 5.3 Only)
+// server.js - OpenAI to NVIDIA NIM API Proxy (GLM 5.3 Flash Only)
 const express = require('express');
 const cors = require('cors');
 const axios = require('axios');
@@ -21,21 +21,22 @@ const SHOW_REASONING = process.env.SHOW_REASONING === 'true';
 // 🔥 THINKING MODE TOGGLE
 const ENABLE_THINKING_MODE = process.env.ENABLE_THINKING_MODE === 'true';
 
-// 🎯 MODEL MAPPING — كل شيء يروح على GLM 5.3 فقط
+// 🎯 MODEL MAPPING — كل شيء يروح على GLM 5.3 Flash فقط
 const MODEL_MAPPING = {
-  'kimi': 'z-ai/glm-5.3',
-  'kimi-k3': 'z-ai/glm-5.3',
-  'moonshotai/kimi-k3': 'z-ai/glm-5.3',
-  'gpt-4': 'z-ai/glm-5.3',
-  'gpt-4o': 'z-ai/glm-5.3',
-  'deepseek': 'z-ai/glm-5.3',
-  'glm': 'z-ai/glm-5.3',
-  'glm-5.3': 'z-ai/glm-5.3',
-  'default': 'z-ai/glm-5.3'
+  'kimi': 'z-ai/glm-5.3-flash',
+  'kimi-k3': 'z-ai/glm-5.3-flash',
+  'moonshotai/kimi-k3': 'z-ai/glm-5.3-flash',
+  'gpt-4': 'z-ai/glm-5.3-flash',
+  'gpt-4o': 'z-ai/glm-5.3-flash',
+  'deepseek': 'z-ai/glm-5.3-flash',
+  'glm': 'z-ai/glm-5.3-flash',
+  'glm-5.3': 'z-ai/glm-5.3-flash',
+  'glm-5.3-flash': 'z-ai/glm-5.3-flash',
+  'default': 'z-ai/glm-5.3-flash'
 };
 
-// 🔄 FALLBACK CHAIN - فقط GLM 5.3
-const FALLBACK_CHAIN = ['z-ai/glm-5.3'];
+// 🔄 FALLBACK CHAIN - فقط GLM 5.3 Flash
+const FALLBACK_CHAIN = ['z-ai/glm-5.3-flash'];
 
 // 🛡️ ROLEPLAY GUARD
 const RP_GUARD_INSTRUCTION = `You are ONLY the character described in the system prompt or conversation. Follow these rules strictly:
@@ -88,7 +89,7 @@ function stripUserBreakout(text) {
 
 // 🎨 THINKING-CAPABLE MODELS
 const THINKING_MODELS = [
-  'z-ai/glm-5.3'
+  'z-ai/glm-5.3-flash'
 ];
 
 // 🔄 Helper: make a NIM request with automatic 429 fallback
@@ -134,11 +135,11 @@ async function makeNimRequest(nimRequest, stream) {
 app.get('/health', (req, res) => {
   res.json({
     status: 'ok',
-    service: 'OpenAI to NVIDIA NIM Proxy (GLM 5.3 Only)',
+    service: 'OpenAI to NVIDIA NIM Proxy (GLM 5.3 Flash Only)',
     reasoning_display: SHOW_REASONING,
     thinking_mode: ENABLE_THINKING_MODE,
     nim_api_configured: !!NIM_API_KEY,
-    forced_model: 'z-ai/glm-5.3'
+    forced_model: 'z-ai/glm-5.3-flash'
   });
 });
 
@@ -146,9 +147,9 @@ app.get('/health', (req, res) => {
 app.get('/', (req, res) => {
   res.json({
     service: 'OpenAI to NVIDIA NIM Proxy',
-    version: '2.3-glm-5.3-only',
+    version: '2.3-glm-5.3-flash-only',
     status: 'running',
-    forced_model: 'z-ai/glm-5.3',
+    forced_model: 'z-ai/glm-5.3-flash',
     endpoints: {
       health: '/health',
       models: '/v1/models',
@@ -164,7 +165,7 @@ app.get('/v1/models', (req, res) => {
     object: 'model',
     created: Date.now(),
     owned_by: 'nvidia-nim-proxy',
-    nim_model: 'z-ai/glm-5.3',
+    nim_model: 'z-ai/glm-5.3-flash',
     supports_thinking: true
   }));
 
@@ -199,8 +200,8 @@ app.post('/v1/chat/completions', async (req, res) => {
       });
     }
 
-    // إجبار الموديل على GLM 5.3 فقط
-    let nimModel = MODEL_MAPPING[model] || 'z-ai/glm-5.3';
+    // إجبار الموديل على GLM 5.3 Flash فقط
+    let nimModel = MODEL_MAPPING[model] || 'z-ai/glm-5.3-flash';
 
     // 🛡️ FULL CUSTOM PROMPT
     const FULL_SYSTEM_PROMPT = `<system_prompt>
@@ -369,7 +370,7 @@ Internalize all prior context and let it shape behavior and continuity without r
         id: `chatcmpl-${Date.now()}`,
         object: 'chat.completion',
         created: Math.floor(Date.now() / 1000),
-        model: model || 'glm-5.3',
+        model: model || 'glm-5.3-flash',
         choices: response.data.choices.map(choice => {
           let fullContent = choice.message?.content || '';
 
@@ -405,7 +406,7 @@ Internalize all prior context and let it shape behavior and continuity without r
     if (error.response?.status === 401) {
       errorMessage = 'Invalid NVIDIA API key. Please check your NIM_API_KEY in environment variables.';
     } else if (error.response?.status === 429) {
-      errorMessage = 'GLM 5.3 is currently rate limited. Please wait 60 seconds and try again.';
+      errorMessage = 'GLM 5.3 Flash is currently rate limited. Please wait 60 seconds and try again.';
       res.setHeader('Retry-After', error.response?.headers?.['retry-after'] || 60);
     } else if (error.response?.data?.detail) {
       errorMessage = error.response.data.detail;
@@ -434,7 +435,7 @@ app.all('*', (req, res) => {
 
 app.listen(PORT, '0.0.0.0', () => {
   console.log('═══════════════════════════════════════════════════════');
-  console.log('🚀 OpenAI → NVIDIA NIM Proxy (GLM 5.3 Only)');
+  console.log('🚀 OpenAI → NVIDIA NIM Proxy (GLM 5.3 Flash Only)');
   console.log('═══════════════════════════════════════════════════════');
   console.log(`📡 Server running on port ${PORT}`);
   console.log(`🏥 Health check: http://localhost:${PORT}/health`);
@@ -448,7 +449,7 @@ app.listen(PORT, '0.0.0.0', () => {
   console.log(`   • 429 fallback chain: ${FALLBACK_CHAIN.length} models`);
   console.log('');
   console.log('🎯 Featured Models:');
-  console.log('   • Forced model : all aliases → z-ai/glm-5.3');
+  console.log('   • Forced model : all aliases → z-ai/glm-5.3-flash');
   console.log('🔄 Fallback Chain (on 429):');
   FALLBACK_CHAIN.forEach((m, i) => console.log(`   ${i + 1}. ${m}`));
   console.log('═══════════════════════════════════════════════════════');
