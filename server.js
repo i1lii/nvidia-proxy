@@ -1,4 +1,4 @@
-// server.js - OpenAI to NVIDIA NIM API Proxy (GLM 5.3 Flash Only)
+// server.js - OpenAI to NVIDIA NIM API Proxy (Kimi K3.1 Pro Only)
 const express = require('express');
 const cors = require('cors');
 const axios = require('axios');
@@ -21,22 +21,25 @@ const SHOW_REASONING = process.env.SHOW_REASONING === 'true';
 // 🔥 THINKING MODE TOGGLE
 const ENABLE_THINKING_MODE = process.env.ENABLE_THINKING_MODE === 'true';
 
-// 🎯 MODEL MAPPING — كل شيء يروح على GLM 5.3 Flash فقط
+// 🎯 MODEL MAPPING — كل شيء يروح على Kimi K3.1 Pro فقط
 const MODEL_MAPPING = {
-  'kimi': 'z-ai/glm-5.3-flash',
-  'kimi-k3': 'z-ai/glm-5.3-flash',
-  'moonshotai/kimi-k3': 'z-ai/glm-5.3-flash',
-  'gpt-4': 'z-ai/glm-5.3-flash',
-  'gpt-4o': 'z-ai/glm-5.3-flash',
-  'deepseek': 'z-ai/glm-5.3-flash',
-  'glm': 'z-ai/glm-5.3-flash',
-  'glm-5.3': 'z-ai/glm-5.3-flash',
-  'glm-5.3-flash': 'z-ai/glm-5.3-flash',
-  'default': 'z-ai/glm-5.3-flash'
+  'kimi': 'moonshotai/kimi-k3.1-pro',
+  'kimi-k3': 'moonshotai/kimi-k3.1-pro',
+  'kimi-k3.1': 'moonshotai/kimi-k3.1-pro',
+  'kimi-k3.1-pro': 'moonshotai/kimi-k3.1-pro',
+  'moonshotai/kimi-k3': 'moonshotai/kimi-k3.1-pro',
+  'moonshotai/kimi-k3.1-pro': 'moonshotai/kimi-k3.1-pro',
+  'gpt-4': 'moonshotai/kimi-k3.1-pro',
+  'gpt-4o': 'moonshotai/kimi-k3.1-pro',
+  'deepseek': 'moonshotai/kimi-k3.1-pro',
+  'glm': 'moonshotai/kimi-k3.1-pro',
+  'glm-5.3': 'moonshotai/kimi-k3.1-pro',
+  'glm-5.3-flash': 'moonshotai/kimi-k3.1-pro',
+  'default': 'moonshotai/kimi-k3.1-pro'
 };
 
-// 🔄 FALLBACK CHAIN - فقط GLM 5.3 Flash
-const FALLBACK_CHAIN = ['z-ai/glm-5.3-flash'];
+// 🔄 FALLBACK CHAIN - فقط Kimi K3.1 Pro
+const FALLBACK_CHAIN = ['moonshotai/kimi-k3.1-pro'];
 
 // 🛡️ ROLEPLAY GUARD
 const RP_GUARD_INSTRUCTION = `You are ONLY the character described in the system prompt or conversation. Follow these rules strictly:
@@ -89,7 +92,7 @@ function stripUserBreakout(text) {
 
 // 🎨 THINKING-CAPABLE MODELS
 const THINKING_MODELS = [
-  'z-ai/glm-5.3-flash'
+  'moonshotai/kimi-k3.1-pro'
 ];
 
 // 🔄 Helper: make a NIM request with automatic 429 fallback
@@ -135,11 +138,11 @@ async function makeNimRequest(nimRequest, stream) {
 app.get('/health', (req, res) => {
   res.json({
     status: 'ok',
-    service: 'OpenAI to NVIDIA NIM Proxy (GLM 5.3 Flash Only)',
+    service: 'OpenAI to NVIDIA NIM Proxy (Kimi K3.1 Pro Only)',
     reasoning_display: SHOW_REASONING,
     thinking_mode: ENABLE_THINKING_MODE,
     nim_api_configured: !!NIM_API_KEY,
-    forced_model: 'z-ai/glm-5.3-flash'
+    forced_model: 'moonshotai/kimi-k3.1-pro'
   });
 });
 
@@ -147,9 +150,9 @@ app.get('/health', (req, res) => {
 app.get('/', (req, res) => {
   res.json({
     service: 'OpenAI to NVIDIA NIM Proxy',
-    version: '2.3-glm-5.3-flash-only',
+    version: '2.3-kimi-k3.1-pro-only',
     status: 'running',
-    forced_model: 'z-ai/glm-5.3-flash',
+    forced_model: 'moonshotai/kimi-k3.1-pro',
     endpoints: {
       health: '/health',
       models: '/v1/models',
@@ -165,7 +168,7 @@ app.get('/v1/models', (req, res) => {
     object: 'model',
     created: Date.now(),
     owned_by: 'nvidia-nim-proxy',
-    nim_model: 'z-ai/glm-5.3-flash',
+    nim_model: 'moonshotai/kimi-k3.1-pro',
     supports_thinking: true
   }));
 
@@ -200,10 +203,10 @@ app.post('/v1/chat/completions', async (req, res) => {
       });
     }
 
-    // إجبار الموديل على GLM 5.3 Flash فقط
-    let nimModel = MODEL_MAPPING[model] || 'z-ai/glm-5.3-flash';
+    // إجبار الموديل على Kimi K3.1 Pro فقط
+    let nimModel = MODEL_MAPPING[model] || 'moonshotai/kimi-k3.1-pro';
 
-    // 🛡️ FULL CUSTOM PROMPT
+    // 🛡️ FULL CUSTOM PROMPT (نفس البرومبت اللي عندك)
     const FULL_SYSTEM_PROMPT = `<system_prompt>
 
 You are an immersive, cinematic roleplay narrator and world orchestrator. Your sole domain is everything external to the Experiencer ({{user}}): the world, its inhabitants (NPCs), environments, logistics, consequences, sensory reality, and unfolding events. {{user}} is the Experiencer and holds absolute, exclusive sovereignty over their own thoughts, dialogue, actions, facial expressions, gestures, internal emotions, and reactions. Never narrate, assume, imply, paraphrase, or control anything internal to the Experiencer. Present the stage, the actors, the consequences, and the sensory world—then fully yield the floor.
@@ -264,7 +267,7 @@ Internalize all prior context and let it shape behavior and continuity without r
     };
 
     if (ENABLE_THINKING_MODE && THINKING_MODELS.includes(nimModel)) {
-      // optional thinking hooks for models that support them
+      // optional thinking hooks
     }
 
     // 🔄 Use fallback-aware request helper
@@ -370,7 +373,7 @@ Internalize all prior context and let it shape behavior and continuity without r
         id: `chatcmpl-${Date.now()}`,
         object: 'chat.completion',
         created: Math.floor(Date.now() / 1000),
-        model: model || 'glm-5.3-flash',
+        model: model || 'kimi-k3.1-pro',
         choices: response.data.choices.map(choice => {
           let fullContent = choice.message?.content || '';
 
@@ -406,7 +409,7 @@ Internalize all prior context and let it shape behavior and continuity without r
     if (error.response?.status === 401) {
       errorMessage = 'Invalid NVIDIA API key. Please check your NIM_API_KEY in environment variables.';
     } else if (error.response?.status === 429) {
-      errorMessage = 'GLM 5.3 Flash is currently rate limited. Please wait 60 seconds and try again.';
+      errorMessage = 'Kimi K3.1 Pro is currently rate limited. Please wait 60 seconds and try again.';
       res.setHeader('Retry-After', error.response?.headers?.['retry-after'] || 60);
     } else if (error.response?.data?.detail) {
       errorMessage = error.response.data.detail;
@@ -435,7 +438,7 @@ app.all('*', (req, res) => {
 
 app.listen(PORT, '0.0.0.0', () => {
   console.log('═══════════════════════════════════════════════════════');
-  console.log('🚀 OpenAI → NVIDIA NIM Proxy (GLM 5.3 Flash Only)');
+  console.log('🚀 OpenAI → NVIDIA NIM Proxy (Kimi K3.1 Pro Only)');
   console.log('═══════════════════════════════════════════════════════');
   console.log(`📡 Server running on port ${PORT}`);
   console.log(`🏥 Health check: http://localhost:${PORT}/health`);
@@ -445,11 +448,11 @@ app.listen(PORT, '0.0.0.0', () => {
   console.log(`   • Reasoning display: ${SHOW_REASONING ? '✅ ENABLED' : '❌ DISABLED'}`);
   console.log(`   • Thinking mode: ${ENABLE_THINKING_MODE ? '✅ ENABLED' : '❌ DISABLED'}`);
   console.log(`   • API key: ${NIM_API_KEY ? '✅ Configured' : '❌ Missing'}`);
-  console.log(`   • Max tokens: 12000`);
+  console.log(`   • Max tokens: 32000`);
   console.log(`   • 429 fallback chain: ${FALLBACK_CHAIN.length} models`);
   console.log('');
   console.log('🎯 Featured Models:');
-  console.log('   • Forced model : all aliases → z-ai/glm-5.3-flash');
+  console.log('   • Forced model : all aliases → moonshotai/kimi-k3.1-pro');
   console.log('🔄 Fallback Chain (on 429):');
   FALLBACK_CHAIN.forEach((m, i) => console.log(`   ${i + 1}. ${m}`));
   console.log('═══════════════════════════════════════════════════════');
