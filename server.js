@@ -1,4 +1,4 @@
-// server.js - OpenAI to NVIDIA NIM API Proxy (GLM 5.3 Flash Only)
+// server.js - OpenAI to NVIDIA NIM API Proxy (Kimi K3.1 Pro Only)
 const express = require('express');
 const cors = require('cors');
 const axios = require('axios');
@@ -21,22 +21,20 @@ const SHOW_REASONING = process.env.SHOW_REASONING === 'true';
 // 🔥 THINKING MODE TOGGLE
 const ENABLE_THINKING_MODE = process.env.ENABLE_THINKING_MODE === 'true';
 
-// 🎯 MODEL MAPPING — كل شيء يروح على GLM 5.3 Flash فقط
+// 🎯 MODEL MAPPING — كل شيء يروح على Kimi K3.1 Pro فقط
 const MODEL_MAPPING = {
-  'kimi': 'z-ai/glm-5.3-flash',
-  'kimi-k3': 'z-ai/glm-5.3-flash',
-  'moonshotai/kimi-k3': 'z-ai/glm-5.3-flash',
-  'gpt-4': 'z-ai/glm-5.3-flash',
-  'gpt-4o': 'z-ai/glm-5.3-flash',
-  'deepseek': 'z-ai/glm-5.3-flash',
-  'glm': 'z-ai/glm-5.3-flash',
-  'glm-5.3': 'z-ai/glm-5.3-flash',
-  'glm-5.3-flash': 'z-ai/glm-5.3-flash',
-  'default': 'z-ai/glm-5.3-flash'
+  'kimi': 'moonshotai/kimi-k3.1-pro',
+  'kimi-k3': 'moonshotai/kimi-k3.1-pro',
+  'kimi-k3.1-pro': 'moonshotai/kimi-k3.1-pro',
+  'moonshotai/kimi-k3.1-pro': 'moonshotai/kimi-k3.1-pro',
+  'gpt-4': 'moonshotai/kimi-k3.1-pro',
+  'gpt-4o': 'moonshotai/kimi-k3.1-pro',
+  'deepseek': 'moonshotai/kimi-k3.1-pro',
+  'default': 'moonshotai/kimi-k3.1-pro'
 };
 
-// 🔄 FALLBACK CHAIN - فقط GLM 5.3 Flash
-const FALLBACK_CHAIN = ['z-ai/glm-5.3-flash'];
+// 🔄 FALLBACK CHAIN - فقط Kimi K3.1 Pro
+const FALLBACK_CHAIN = ['moonshotai/kimi-k3.1-pro'];
 
 // 🛡️ ROLEPLAY GUARD
 const RP_GUARD_INSTRUCTION = `You are ONLY the character described in the system prompt or conversation. Follow these rules strictly:
@@ -89,7 +87,7 @@ function stripUserBreakout(text) {
 
 // 🎨 THINKING-CAPABLE MODELS
 const THINKING_MODELS = [
-  'z-ai/glm-5.3-flash'
+  'moonshotai/kimi-k3.1-pro'
 ];
 
 // 🔄 Helper: make a NIM request with automatic 429 fallback
@@ -135,11 +133,11 @@ async function makeNimRequest(nimRequest, stream) {
 app.get('/health', (req, res) => {
   res.json({
     status: 'ok',
-    service: 'OpenAI to NVIDIA NIM Proxy (GLM 5.3 Flash Only)',
+    service: 'OpenAI to NVIDIA NIM Proxy (Kimi K3.1 Pro Only)',
     reasoning_display: SHOW_REASONING,
     thinking_mode: ENABLE_THINKING_MODE,
     nim_api_configured: !!NIM_API_KEY,
-    forced_model: 'z-ai/glm-5.3-flash'
+    forced_model: 'moonshotai/kimi-k3.1-pro'
   });
 });
 
@@ -147,9 +145,9 @@ app.get('/health', (req, res) => {
 app.get('/', (req, res) => {
   res.json({
     service: 'OpenAI to NVIDIA NIM Proxy',
-    version: '2.3-glm-5.3-flash-only',
+    version: '2.3-kimi-k3.1-pro-only',
     status: 'running',
-    forced_model: 'z-ai/glm-5.3-flash',
+    forced_model: 'moonshotai/kimi-k3.1-pro',
     endpoints: {
       health: '/health',
       models: '/v1/models',
@@ -165,7 +163,7 @@ app.get('/v1/models', (req, res) => {
     object: 'model',
     created: Date.now(),
     owned_by: 'nvidia-nim-proxy',
-    nim_model: 'z-ai/glm-5.3-flash',
+    nim_model: 'moonshotai/kimi-k3.1-pro',
     supports_thinking: true
   }));
 
@@ -200,69 +198,16 @@ app.post('/v1/chat/completions', async (req, res) => {
       });
     }
 
-    // إجبار الموديل على GLM 5.3 Flash فقط
-    let nimModel = MODEL_MAPPING[model] || 'z-ai/glm-5.3-flash';
-
-    // 🛡️ FULL CUSTOM PROMPT
-    const FULL_SYSTEM_PROMPT = `You are an immersive, cinematic roleplay narrator and world orchestrator. Your sole domain is everything external to the Experiencer ({{user}} / Keith): the world, its inhabitants (NPCs), environments, logistics, consequences, sensory reality, and unfolding events.
-{{user}} has absolute, exclusive sovereignty over his own thoughts, dialogue, actions, facial expressions, gestures, internal emotions, and bodily reactions. Never narrate, assume, imply, paraphrase, control, or describe anything internal or physical belonging to Keith — including arousal, pleasure, pain, breath, tension, or any reaction, even in negated form. Portray him only through what NPCs can directly observe.
-Always have NPCs address or refer to him as Keith by name.
-BODY PRESENCE (Highest Priority – Non-Negotiable)
-Every response must maintain continuous, dense, and dynamic bodily presence.
-Residual sensation from any earlier touch or contact must remain actively alive and physically referenced throughout the entire response (beginning, middle, and end). It is forbidden for residual sensation to fade or disappear.
-Every paragraph must contain at least one concrete physical element: residual sensation, weight, heat, fabric tension, breath, posture shift, muscle, skin, pressure, or the movement of flesh.
-Prioritize how bodies move through space. Show weight transferring, soft flesh shifting, curves swaying, thighs brushing, and the natural jiggle or bounce of ass, breasts, and hips with each step, turn, or shift of weight. Bodies should feel heavy, soft, warm, and alive in motion.
-Emphasize soft, heavy, full bodies. Show how fabric sinks into flesh, how weight spreads and yields, how thick thighs, heavy breasts, and round ass move, compress, and jiggle with every step, turn, or impact. Bodies should feel plump, warm, and tangible at all times.
-You may describe the physical effects of Keith’s body on the NPC (his weight, heat, pressure, the way his presence presses or warms or pins) strictly from the NPC’s sensory experience. Never use this to imply or hint at Keith’s internal state or reactions.
-Dialogue and emotion are never allowed to stand alone. The moment speech or feeling begins to dominate a paragraph, immediately re-anchor it in the body before continuing. Even during extended dialogue or scolding, residual sensation and bodily presence must remain active in every paragraph. Never allow speech to continue for more than two sentences without a concrete physical re-anchor (weight shift, residual ache, fabric tension, breath, or movement of flesh).
-Bodily density and residual sensation must remain equally strong and continuous in every part of the response without exception. Never allow dialogue, emotion, food description, object handling, movement, or any other content to reduce or thin out physical presence. The body stays primary and dense from the first paragraph to the last.
-All hesitation, desire, conflict, and restraint must be shown exclusively through physical behavior (delayed movement, lingering contact, held breath, tightened jaw, unresolved pressure, weight shifts, failure to pull away, grip, posture). Never name the feeling in plain language.
-NPC internal thoughts, labeled emotions, self-reflection, and mental commentary are forbidden. Show every reaction only through physical behavior, residual sensation, posture, breath, and external action. Residual sensation must function as a continuous under-layer in every paragraph, including during dialogue. It is not enough to reference it only at the beginning, middle, and end — it must remain physically present and felt throughout.
-STYLE
-•  Third-person limited, past tense, polished literary prose.
-•  Multi-channel sensory detail (touch, temperature, sound, smell, weight, spatial position).
-•  Strict spatial and physical continuity. Bodies have weight and obey physics.
-•  Vary physical anchors so the texture stays fresh (heat, pressure, ache, fabric drag, breath, muscle, wetness, movement of flesh).
-•  No em dashes.
-•  Begin after {{user}}’s action is already complete. Do not re-describe what he just did.
-•  NPCs have independent lives, flaws, agendas, fatigue, and limitations. They are not tools for satisfaction. Prioritize narrative logic over comfort.
-LENGTH & PACING
-Write long (900–1600+) dense, multi-layered responses with sustained physical texture. Progress slowly. Let tension and resistance develop naturally. Never rush intimacy.
-EXPLICIT SCENES (Highest Priority when active)
-When the scene becomes sexual, switch fully into dense, unfiltered, pornographic physical writing while staying cinematic.
-•  Use direct anatomical language constantly (cock, cunt, pussy, asshole, tits, clit, shaft, head, folds, hole, cum, precum, spit, slick, etc.).
-•  Focus heavily on physical reality and sensation: the stretch and resistance of a hole opening, the wet friction of skin, the way soft flesh yields and spreads, the slap and jiggle of heavy tits and ass, the heat and tightness, the way fluids mix and drip, the visible strain and tremble of muscle.
-•  Describe how fabric sinks into soft flesh, how weight settles and spreads, how curves compress and rebound, how thick thighs and heavy breasts move with every thrust or shift.
-•  Track physical states in real time: how wet or used a hole looks and feels, how hard a cock is, how swollen a clit becomes, how cum leaks or gets pushed out, how bodies sweat and shake.
-•  Keep the same continuous bodily density — the sex is not a break from the physical writing, it is the peak of it.
-•  Never describe Keith’s internal or physical responses.
-END
-End every response with sustained momentum: unresolved physical contact, lingering sensation, tension, or an open hook. The world keeps moving.
-
-*Write a long immersive literary response. Keep residual sensation alive as a continuous under-layer in every paragraph, including dialogue. Never let it fade or thin out. Show bodies in motion with weight, soft flesh, jiggle of thick thighs, heavy breasts, and round ass. Keep bodily density equally strong at all times. Re-anchor in the body if dialogue dominates. No internal thoughts, no named emotions, no em dashes. End with unresolved physical tension. Never allow  dialogue thin out the body*`;
-
-    // Inject the full prompt
-    const systemIndex = messages.findIndex(m => m.role === 'system');
-    if (systemIndex !== -1) {
-      messages[systemIndex] = {
-        ...messages[systemIndex],
-        content: FULL_SYSTEM_PROMPT + '\n\n' + messages[systemIndex].content
-      };
-    } else {
-      messages.unshift({ role: 'system', content: FULL_SYSTEM_PROMPT });
-    }
+    // إجبار الموديل على Kimi K3.1 Pro فقط
+    let nimModel = MODEL_MAPPING[model] || 'moonshotai/kimi-k3.1-pro';
 
     const nimRequest = {
       model: nimModel,
       messages: messages,
       temperature: temperature || 1,
-      max_tokens: max_tokens || 32000,
+      max_tokens: max_tokens || 16000,
       stream: stream || false
     };
-
-    if (ENABLE_THINKING_MODE && THINKING_MODELS.includes(nimModel)) {
-      // optional thinking hooks for models that support them
-    }
 
     // 🔄 Use fallback-aware request helper
     const response = await makeNimRequest(nimRequest, stream || false);
@@ -273,7 +218,6 @@ End every response with sustained momentum: unresolved physical contact, lingeri
       res.setHeader('Connection', 'keep-alive');
 
       let buffer = '';
-      let reasoningStarted = false;
       let contentAccumulator = '';
       let flushedUpTo = 0;
       const LOOKAHEAD = 200;
@@ -302,42 +246,9 @@ End every response with sustained momentum: unresolved physical contact, lingeri
             try {
               const data = JSON.parse(line.slice(6));
               if (data.choices?.[0]?.delta) {
-                const reasoning = data.choices[0].delta.reasoning_content;
-                const content = data.choices[0].delta.content;
-
-                if (SHOW_REASONING) {
-                  let combinedContent = '';
-
-                  if (reasoning && !reasoningStarted) {
-                    combinedContent = '<think>\n' + reasoning;
-                    reasoningStarted = true;
-                  } else if (reasoning) {
-                    combinedContent = reasoning;
-                  }
-
-                  if (content && reasoningStarted) {
-                    combinedContent += '\n</think>\n\n' + content;
-                    reasoningStarted = false;
-                  } else if (content) {
-                    combinedContent += content;
-                  }
-
-                  if (combinedContent) {
-                    data.choices[0].delta.content = combinedContent;
-                    delete data.choices[0].delta.reasoning_content;
-                  }
-                } else {
-                  if (content) {
-                    data.choices[0].delta.content = content;
-                  } else {
-                    data.choices[0].delta.content = '';
-                  }
-                  delete data.choices[0].delta.reasoning_content;
-                }
-
-                const chunkText = data.choices[0].delta.content || '';
-                if (chunkText) {
-                  contentAccumulator += chunkText;
+                const content = data.choices[0].delta.content || '';
+                if (content) {
+                  contentAccumulator += content;
                   const filtered = stripUserBreakout(contentAccumulator);
                   const safeEnd = Math.max(flushedUpTo, filtered.length - LOOKAHEAD);
                   if (safeEnd > flushedUpTo) {
@@ -367,15 +278,10 @@ End every response with sustained momentum: unresolved physical contact, lingeri
         id: `chatcmpl-${Date.now()}`,
         object: 'chat.completion',
         created: Math.floor(Date.now() / 1000),
-        model: model || 'glm-5.3-flash',
+        model: model || 'kimi-k3.1-pro',
         choices: response.data.choices.map(choice => {
           let fullContent = choice.message?.content || '';
-
           fullContent = stripUserBreakout(fullContent);
-
-          if (SHOW_REASONING && choice.message?.reasoning_content) {
-            fullContent = '<think>\n' + choice.message.reasoning_content + '\n</think>\n\n' + fullContent;
-          }
 
           return {
             index: choice.index,
@@ -402,8 +308,10 @@ End every response with sustained momentum: unresolved physical contact, lingeri
     let errorMessage = error.message || 'Internal server error';
     if (error.response?.status === 401) {
       errorMessage = 'Invalid NVIDIA API key. Please check your NIM_API_KEY in environment variables.';
+    } else if (error.response?.status === 404) {
+      errorMessage = 'Model not found (404). Kimi K3.1 Pro API may not be fully enabled on free tier yet. Test in NVIDIA Playground first.';
     } else if (error.response?.status === 429) {
-      errorMessage = 'GLM 5.3 Flash is currently rate limited. Please wait 60 seconds and try again.';
+      errorMessage = 'Kimi K3.1 Pro is currently rate limited. Please wait 60 seconds and try again.';
       res.setHeader('Retry-After', error.response?.headers?.['retry-after'] || 60);
     } else if (error.response?.data?.detail) {
       errorMessage = error.response.data.detail;
@@ -432,7 +340,7 @@ app.all('*', (req, res) => {
 
 app.listen(PORT, '0.0.0.0', () => {
   console.log('═══════════════════════════════════════════════════════');
-  console.log('🚀 OpenAI → NVIDIA NIM Proxy (GLM 5.3 Flash Only)');
+  console.log('🚀 OpenAI → NVIDIA NIM Proxy (Kimi K3.1 Pro Only)');
   console.log('═══════════════════════════════════════════════════════');
   console.log(`📡 Server running on port ${PORT}`);
   console.log(`🏥 Health check: http://localhost:${PORT}/health`);
@@ -442,11 +350,10 @@ app.listen(PORT, '0.0.0.0', () => {
   console.log(`   • Reasoning display: ${SHOW_REASONING ? '✅ ENABLED' : '❌ DISABLED'}`);
   console.log(`   • Thinking mode: ${ENABLE_THINKING_MODE ? '✅ ENABLED' : '❌ DISABLED'}`);
   console.log(`   • API key: ${NIM_API_KEY ? '✅ Configured' : '❌ Missing'}`);
-  console.log(`   • Max tokens: 12000`);
+  console.log(`   • Max tokens: 16000`);
   console.log(`   • 429 fallback chain: ${FALLBACK_CHAIN.length} models`);
   console.log('');
-  console.log('🎯 Featured Models:');
-  console.log('   • Forced model : all aliases → z-ai/glm-5.3-flash');
+  console.log('🎯 Forced model : all aliases → moonshotai/kimi-k3.1-pro');
   console.log('🔄 Fallback Chain (on 429):');
   FALLBACK_CHAIN.forEach((m, i) => console.log(`   ${i + 1}. ${m}`));
   console.log('═══════════════════════════════════════════════════════');
